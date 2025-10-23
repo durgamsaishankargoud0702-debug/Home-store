@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Retail Shop</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #f4f4f4;
+    }
+    header {
+      background: linear-gradient(45deg, #ff8c00, #ff3e6c);
+      color: white;
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+    header nav a {
+      color: white;
+      margin: 0 0.5rem;
+      text-decoration: none;
+      transition: transform 0.3s ease-in-out;
+    }
+    header nav a:hover {
+      text-decoration: underline;
+      transform: scale(1.1);
+    }
+    .container {
+      padding: 2rem;
+      text-align: center;
+    }
+    .grid {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .item {
+      border: 1px solid #ccc;
+      padding: 1rem;
+      text-align: center;
+      width: 200px;
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      transition: transform 0.3s ease-in-out;
+    }
+    .item:hover {
+      transform: translateY(-10px);
+    }
+    .item img {
+      width: 150px;
+      height: 150px;
+      object-fit: cover;
+      display: block;
+      margin: 0 auto 1rem;
+      border-radius: 8px;
+    }
+    .item button {
+      background: #28a745;
+      color: white;
+      border: none;
+      padding: 0.5rem;
+      cursor: pointer;
+      border-radius: 5px;
+      transition: background 0.3s ease;
+    }
+    .item button:hover {
+      background: #218838;
+    }
+    .cart-container {
+      margin-top: 2rem;
+      padding: 1rem;
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    .cart-title {
+      font-size: 1.5rem;
+      margin-bottom: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>🏬 Home Store</h1>
+    <nav>
+      <a href="mainhome.html">🏠 Home</a>
+      <a href="about.html">ℹ️ About</a>
+      <a href="contact.html">📞 Contact</a>
+      <a href="cart.html">🛒 View Cart</a>
+      <a href="log1.html">Login</a>
+	<a href="signup.html">signup</a>
+    </nav>
+  </header>
+  
+  <div class="container">
+    <h2>🛒 Groceries & Essentials</h2>
+    <div class="grid" id="shopProducts"></div>
+    <div class="cart-container">
+      <h2 class="cart-title">🛒 Your Cart</h2>
+      <div class="grid" id="cartItems"></div>
+    </div>
+  </div>
+
+  <script>
+    function addToCart(name, price, imageUrl) {
+        let cart = JSON.parse(localStorage.getItem('cart')) || [];
+        let existingProduct = cart.find(item => item.name === name);
+        if (existingProduct) {
+            existingProduct.quantity += 1;
+        } else {
+            cart.push({ name, price, imageUrl, quantity: 1 });
+        }
+        localStorage.setItem('cart', JSON.stringify(cart));
+        displayCartItems();
+    }
+
+    function loadShopProducts() {
+        let productContainer = document.getElementById('shopProducts');
+        productContainer.innerHTML = '';
+        fetch('fetch_products.php')
+            .then(response => response.json())
+            .then(products => {
+                if (products.length === 0) {
+                    productContainer.innerHTML = "<p>No products available.</p>";
+                    return;
+                }
+                products.forEach(product => {
+                    let productDiv = document.createElement('div');
+                    productDiv.classList.add('item');
+                    productDiv.innerHTML = `
+                        <img src="${product.image_url}" alt="${product.name}">
+                        <p>🛒 ${product.name}</p>
+                        <p>💰 Price: $${product.price}</p>
+                        <p>📞 Mobile: ${product.mobile}</p>
+                        <p>🏪 Store: ${product.store_name}</p>
+                        <p>📍 Address: ${product.store_address}</p>
+                        <p>📦 Quantity: ${product.quantity}</p>
+                        <button onclick="addToCart('${product.name}', ${product.price}, '${product.image_url}')">Add to Cart</button>
+                    `;
+                    productContainer.appendChild(productDiv);
+                });
+            })
+            .catch(error => {
+                console.error('Error fetching products:', error);
+                productContainer.innerHTML = "<p>Error loading products. Please try again later.</p>";
+            });
+    }
+
+    function displayCartItems() {
+        let cartContainer = document.getElementById('cartItems');
+        cartContainer.innerHTML = '';
+        let cart = JSON.parse(localStorage.getItem('cart')) || [];
+        if (cart.length === 0) {
+            cartContainer.innerHTML = "<p>Your cart is empty.</p>";
+            return;
+        }
+        cart.forEach(item => {
+            let cartDiv = document.createElement('div');
+            cartDiv.classList.add('item');
+            cartDiv.innerHTML = `
+                <img src="${item.imageUrl}" alt="${item.name}">
+                <p>🛒 ${item.name} (x${item.quantity})</p>
+                <p>💰 Price: $${item.price}</p>
+            `;
+            cartContainer.appendChild(cartDiv);
+        });
+    }
+
+    window.onload = function() {
+        loadShopProducts();
+        displayCartItems();
+    };
+  </script>
+</body>
+</html>

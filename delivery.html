@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Delivery Details</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: #f4f4f4;
+            text-align: center;
+        }
+        header {
+            background: linear-gradient(45deg, #ff8c00, #ff3e6c);
+            color: white;
+            padding: 1rem;
+            font-size: 1.5rem;
+        }
+        .container {
+            max-width: 400px;
+            margin: 30px auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            text-align: left;
+        }
+        .container h2 {
+            text-align: center;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+        .order-summary {
+            background: #f8f8f8;
+            padding: 10px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+        }
+        .confirm-btn {
+            width: 100%;
+            padding: 10px;
+            background: #007bff;
+            color: white;
+            border: none;
+            font-size: 1.2rem;
+            cursor: pointer;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+        .confirm-btn:hover {
+            background: #0056b3;
+        }
+        .success-message {
+            display: none;
+            font-size: 1.2rem;
+            color: green;
+            margin-top: 20px;
+            animation: fadeIn 1s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+
+<header>🚚 Delivery Details</header>
+
+<div class="container">
+    <h2>Enter Your Delivery Details</h2>
+
+    <!-- Order Summary -->
+    <div class="order-summary">
+        <h3>📦 Order Summary</h3>
+        <div id="orderItems"></div>
+        <p><strong>Total Amount: $<span id="totalAmount">0</span></strong></p>
+    </div>
+
+    <button onclick="getLocation()">📍 Use My Location</button>
+
+    <!-- Delivery Form -->
+    <form action="delivery_details.php" method="POST">
+        <div class="form-group">
+            <label for="fullName">Full Name</label>
+            <input type="text" id="fullName" name="fullName" placeholder="Enter your name" required>
+        </div>
+        <div class="form-group">
+            <label for="address">Address</label>
+            <input type="text" id="address" name="address" placeholder="Enter your address" required>
+        </div>
+        <div class="form-group">
+            <label for="city">City</label>
+            <input type="text" id="city" name="city" placeholder="Enter your city" required>
+        </div>
+        <div class="form-group">
+            <label for="pincode">Pincode</label>
+            <input type="text" id="pincode" name="pincode" placeholder="Enter pincode" maxlength="6" required>
+        </div>
+        <div class="form-group">
+            <label for="contact">Contact Number</label>
+            <input type="text" id="contact" name="contact" placeholder="Enter contact number" maxlength="10" required>
+        </div>
+
+        <button class="confirm-btn" type="submit">Confirm Order</button>
+    </form>
+
+    <p class="success-message" id="successMessage">✅ Order Placed Successfully! Your items will be delivered soon.</p>
+</div>
+
+<script>
+    function loadOrderSummary() {
+        let cart = JSON.parse(localStorage.getItem("cart")) || [];
+        let totalPrice = localStorage.getItem("totalPrice") || "0";
+        let orderItemsDiv = document.getElementById("orderItems");
+        
+        orderItemsDiv.innerHTML = ""; 
+        if (cart.length === 0) {
+            orderItemsDiv.innerHTML = "<p>No items in cart.</p>";
+        } else {
+            cart.forEach(item => {
+                let itemDiv = document.createElement("p");
+                itemDiv.innerHTML = `🛒 ${item.name} - $${item.price} x ${item.quantity}`;
+                orderItemsDiv.appendChild(itemDiv);
+            });
+        }
+        
+        document.getElementById("totalAmount").innerText = totalPrice;
+    }
+
+    function getLocation() {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(showPosition, showError);
+        } else {
+            alert("Geolocation is not supported by your browser.");
+        }
+    }
+
+    function showPosition(position) {
+        let latitude = position.coords.latitude;
+        let longitude = position.coords.longitude;
+        let apiKey = "YOUR_GOOGLE_MAPS_API_KEY"; // 🔥 Replace this with your API key
+        let geocodeUrl = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${apiKey}`;
+
+        fetch(geocodeUrl)
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === "OK") {
+                    let addressComponents = data.results[0].address_components;
+                    let address = data.results[0].formatted_address;
+                    let city = "";
+                    let pincode = "";
+
+                    addressComponents.forEach(component => {
+                        if (component.types.includes("locality")) {
+                            city = component.long_name;
+                        }
+                        if (component.types.includes("postal_code")) {
+                            pincode = component.long_name;
+                        }
+                    });
+
+                    document.getElementById("address").value = address;
+                    document.getElementById("city").value = city;
+                    document.getElementById("pincode").value = pincode;
+                } else {
+                    alert("Could not retrieve location details.");
+                }
+            })
+            .catch(error => console.error("Error fetching location:", error));
+    }
+
+    function showError(error) {
+        alert("Error getting location: " + error.message);
+    }
+
+    window.onload = loadOrderSummary;
+</script>
+
+</body>
+</html>

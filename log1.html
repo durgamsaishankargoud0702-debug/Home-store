@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login & Sign-Up with OTP</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            flex-direction: column;
+        }
+        .container {
+            width: 300px;
+            padding: 20px;
+            background: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        h2 {
+            margin-bottom: 20px;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #218838;
+        }
+        .popup {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            border-radius: 5px;
+            z-index: 10;
+        }
+        .hidden {
+            display: none;
+        }
+        .forgot-password {
+            background: none;
+            border: none;
+            color: #007bff;
+            cursor: pointer;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Login Form -->
+    <form class="container" id="loginBox" action="login.php" method="POST">
+        <h2>Login</h2>
+        <input type="text" name="loginMobile" id="loginMobile" placeholder="Enter Mobile Number" required>
+        <input type="password" name="loginPassword" id="loginPassword" placeholder="Enter Password" required>
+        <button type="submit">Login</button>
+        <button class="forgot-password" type="button" onclick="showForgotPasswordPopup()">Forgot Password?</button>
+        <p>Don't have an account? <a href="#" onclick="toggleForm()">Sign Up</a></p>
+    </form>
+
+    <!-- Signup Form -->
+    <form class="container hidden" id="signupBox" action="register.php" method="POST">
+        <h2>Sign Up</h2>
+        <input type="text" name="signupMobile" id="signupMobile" placeholder="Enter Mobile Number" required>
+        <input type="password" name="signupPassword" id="signupPassword" placeholder="Enter Password" required>
+        <input type="password" name="confirmPassword" id="confirmPassword" placeholder="Confirm Password" required>
+        <button type="button" onclick="showOtpPopup()">Sign Up</button>
+        <p>Already have an account? <a href="#" onclick="toggleForm()">Login</a></p>
+    </form>
+
+    <!-- OTP Popup -->
+    <div class="popup" id="otpPopup">
+        <h3>Enter OTP</h3>
+        <input type="text" id="otpInput" placeholder="Enter OTP" required>
+        <button onclick="verifyOtp()">Verify OTP</button>
+        <button onclick="closePopup()">Close</button>
+    </div>
+
+    <!-- Forgot Password Popup -->
+    <div class="popup" id="forgotPasswordPopup">
+        <h3>Reset Password</h3>
+        <input type="text" id="forgotMobile" placeholder="Enter Mobile Number" required>
+        <button onclick="sendForgotPasswordOtp()">Send OTP</button>
+        <div id="resetPasswordSection" class="hidden">
+            <input type="text" id="forgotOtp" placeholder="Enter OTP" required>
+            <input type="password" id="newPassword" placeholder="Enter New Password" required>
+            <button onclick="resetPassword()">Reset Password</button>
+        </div>
+        <button onclick="closeForgotPasswordPopup()">Close</button>
+    </div>
+
+    <script>
+        function toggleForm() {
+            document.getElementById('loginBox').classList.toggle('hidden');
+            document.getElementById('signupBox').classList.toggle('hidden');
+        }
+
+        function showOtpPopup() {
+            let mobile = document.getElementById("signupMobile").value.trim();
+            let password = document.getElementById("signupPassword").value.trim();
+            let confirmPassword = document.getElementById("confirmPassword").value.trim();
+
+            if (mobile.length !== 10 || isNaN(mobile)) {
+                alert("Enter a valid 10-digit mobile number");
+                return;
+            }
+            if (password.length < 6) {
+                alert("Password must be at least 6 characters");
+                return;
+            }
+            if (password !== confirmPassword) {
+                alert("Passwords do not match");
+                return;
+            }
+
+            window.generatedOTP = Math.floor(100000 + Math.random() * 900000).toString();
+            alert("OTP Sent: " + window.generatedOTP);
+
+            document.getElementById("otpPopup").style.display = "block";
+        }
+
+        function verifyOtp() {
+            let enteredOTP = document.getElementById("otpInput").value.trim();
+            
+            if (enteredOTP === window.generatedOTP) {  
+                alert("Sign-up successful!");
+                document.getElementById("otpPopup").style.display = "none";
+                window.location.href="mainhome.html";
+                toggleForm();
+            } else {
+                alert("Invalid OTP. Try again.");
+            }
+        }
+
+        function closePopup() {
+            document.getElementById("otpPopup").style.display = "none";
+        }
+        function login() {
+            let mobile = document.getElementById("loginMobile").value.trim();
+            let password = document.getElementById("loginPassword").value.trim();
+
+            if (mobile === "9876543210" && password === "password123") {
+                alert("Login successful!");
+           window.location.href = "mainhome.html";
+            } else {
+                alert("Invalid login credentials.");
+            }
+        }
+
+
+        function showForgotPasswordPopup() {
+            document.getElementById("forgotPasswordPopup").style.display = "block";
+        }
+
+        function closeForgotPasswordPopup() {
+            document.getElementById("forgotPasswordPopup").style.display = "none";
+            document.getElementById("resetPasswordSection").classList.add("hidden");
+        }
+
+        function sendForgotPasswordOtp() {
+            let mobile = document.getElementById("forgotMobile").value.trim();
+            if (mobile.length !== 10 || isNaN(mobile)) {
+                alert("Enter a valid 10-digit mobile number");
+                return;
+            }
+
+            window.forgotOTP = Math.floor(100000 + Math.random() * 900000).toString();
+            alert("OTP Sent: " + window.forgotOTP);
+
+            document.getElementById("resetPasswordSection").classList.remove("hidden");
+        }
+
+        function resetPassword() {
+            let enteredOTP = document.getElementById("forgotOtp").value.trim();
+            let newPassword = document.getElementById("newPassword").value.trim();
+
+            if (enteredOTP !== window.forgotOTP) {
+                alert("Invalid OTP. Try again.");
+                return;
+            }
+
+            if (newPassword.length < 6) {
+                alert("Password must be at least 6 characters");
+                return;
+            }
+
+            alert("Password reset successful! You can now login with your new password.");
+            window.location.href="mainhome.html";
+            closeForgotpasswordPopup();
+        }
+    </script>
+
+</body>
+</html>

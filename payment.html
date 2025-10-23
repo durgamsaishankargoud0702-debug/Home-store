@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Page</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: #f4f4f4;
+            text-align: center;
+        }
+        header {
+            background: linear-gradient(45deg, #ff8c00, #ff3e6c);
+            color: white;
+            padding: 1rem;
+            font-size: 1.5rem;
+        }
+        .payment-container {
+            max-width: 400px;
+            margin: 30px auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            text-align: left;
+        }
+        .payment-container h2 {
+            text-align: center;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+        .error {
+            color: red;
+            font-size: 0.9rem;
+            display: none;
+        }
+        .total {
+            text-align: center;
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+            font-weight: bold;
+            color: #28a745;
+        }
+        .pay-btn {
+            width: 100%;
+            padding: 10px;
+            background: #28a745;
+            color: white;
+            border: none;
+            font-size: 1.2rem;
+            cursor: pointer;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+        .pay-btn:hover {
+            background: #218838;
+        }
+        .success-message {
+            display: none;
+            font-size: 1.2rem;
+            color: green;
+            margin-top: 20px;
+            animation: fadeIn 1s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+
+<header>💳 Secure Payment</header>
+
+<div class="payment-container">
+    <h2>Enter Payment Details</h2>
+    <p class="total">Total Amount: $<span id="totalAmount">0</span></p>
+    
+    <div class="form-group">
+        <label for="cardName">Cardholder Name</label>
+        <input type="text" id="cardName" placeholder="Enter your name">
+        <p class="error" id="nameError">⚠ Please enter a valid name!</p>
+    </div>
+    <div class="form-group">
+        <label for="cardNumber">Card Number</label>
+        <input type="text" id="cardNumber" placeholder="XXXX-XXXX-XXXX-XXXX" maxlength="16">
+        <p class="error" id="cardError">⚠ Enter a valid 16-digit card number!</p>
+    </div>
+    <div class="form-group">
+        <label for="expiry">Expiry Date</label>
+        <input type="text" id="expiry" placeholder="MM/YY">
+        <p class="error" id="expiryError">⚠ Enter a valid expiry date (MM/YY)!</p>
+    </div>
+    <div class="form-group">
+        <label for="cvv">CVV</label>
+        <input type="text" id="cvv" placeholder="123" maxlength="3">
+        <p class="error" id="cvvError">⚠ Enter a valid 3-digit CVV!</p>
+    </div>
+
+    <button class="pay-btn" onclick="processPayment()">Pay Now</button>
+    
+    <p class="success-message" id="successMessage">✅ Payment Successful! Thank you for your order.</p>
+</div>
+
+<script>
+    // Get total price from localStorage
+    let totalPrice = localStorage.getItem("totalPrice") || "0";
+    document.getElementById("totalAmount").innerText = totalPrice;
+
+    function validateCardNumber(cardNumber) {
+        return /^[0-9]{16}$/.test(cardNumber);
+    }
+
+    function validateExpiryDate(expiry) {
+        return /^(0[1-9]|1[0-2])\/\d{2}$/.test(expiry);
+    }
+
+    function validateCVV(cvv) {
+        return /^[0-9]{3}$/.test(cvv);
+    }
+
+    function processPayment() {
+        let name = document.getElementById("cardName").value.trim();
+        let cardNumber = document.getElementById("cardNumber").value.trim();
+        let expiry = document.getElementById("expiry").value.trim();
+        let cvv = document.getElementById("cvv").value.trim();
+
+        let isValid = true;
+
+        // Validate Name
+        if (name.length < 3) {
+            document.getElementById("nameError").style.display = "block";
+            isValid = false;
+        } else {
+            document.getElementById("nameError").style.display = "none";
+        }
+
+        // Validate Card Number
+        if (!validateCardNumber(cardNumber)) {
+            document.getElementById("cardError").style.display = "block";
+            isValid = false;
+        } else {
+            document.getElementById("cardError").style.display = "none";
+        }
+
+        // Validate Expiry Date
+        if (!validateExpiryDate(expiry)) {
+            document.getElementById("expiryError").style.display = "block";
+            isValid = false;
+        } else {
+            document.getElementById("expiryError").style.display = "none";
+        }
+
+        // Validate CVV
+        if (!validateCVV(cvv)) {
+            document.getElementById("cvvError").style.display = "block";
+            isValid = false;
+        } else {
+            document.getElementById("cvvError").style.display = "none";
+        }
+
+        if (!isValid) {
+            return; // Stop if validation fails
+        }
+
+        // Fake processing delay
+        setTimeout(() => {
+            document.getElementById("successMessage").style.display = "block";
+            localStorage.removeItem("cart");  // Clear cart after payment
+            localStorage.removeItem("totalPrice"); // Clear total price
+            setTimeout(() => {
+                window.location.href = "mainhome.html"; // Redirect to home
+            }, 3000);
+        }, 2000);
+    }
+</script>
+
+</body>
+</html>

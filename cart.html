@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shopping Cart</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: #f4f4f4;
+        }
+        header {
+            background: linear-gradient(45deg, #ff8c00, #ff3e6c);
+            color: white;
+            padding: 1rem 2rem;
+            text-align: center;
+            font-size: 1.5rem;
+        }
+        .cart-container {
+            max-width: 600px;
+            margin: 20px auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .cart-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px;
+            border-bottom: 1px solid #ccc;
+        }
+        .cart-item img {
+            width: 60px;
+            height: 60px;
+            border-radius: 8px;
+        }
+        .cart-item p {
+            margin: 0;
+            flex-grow: 1;
+            padding: 0 10px;
+        }
+        .quantity {
+            display: flex;
+            align-items: center;
+        }
+        .quantity button {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 5px;
+            cursor: pointer;
+            border-radius: 5px;
+            margin: 0 5px;
+        }
+        .quantity button:hover {
+            background: #218838;
+        }
+        .remove-btn {
+            background: red;
+            color: white;
+            border: none;
+            padding: 5px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        .remove-btn:hover {
+            background: darkred;
+        }
+        .total {
+            text-align: center;
+            font-size: 1.2rem;
+            margin: 20px 0;
+        }
+        .checkout-btn {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            background: #ff3e6c;
+            color: white;
+            border: none;
+            text-align: center;
+            cursor: pointer;
+            border-radius: 5px;
+            font-size: 1.2rem;
+        }
+        .checkout-btn:hover {
+            background: #d63355;
+        }
+    </style>
+</head>
+<body>
+
+<header>🛒 Your Shopping Cart</header>
+
+<div class="cart-container">
+    <div id="cartItems"></div>
+    <p class="total">Total: $<span id="totalPrice">0</span></p>
+    <button class="checkout-btn" onclick="checkout()">Proceed to Payment</button>
+</div>
+
+<form action="add_to_cart.php" method="POST">
+    <!-- Form fields here -->
+    <button type="submit">Add to Cart</button>
+</form>
+
+<script>
+    let cart = JSON.parse(localStorage.getItem('cart')) || [];
+
+    function updateCart() {
+        let cartContainer = document.getElementById('cartItems');
+        let totalPriceElement = document.getElementById('totalPrice');
+        cartContainer.innerHTML = "";
+        let total = 0;
+
+        cart.forEach((item, index) => {
+            let itemTotal = item.price * item.quantity;
+            total += itemTotal;
+
+            let cartItem = document.createElement('div');
+            cartItem.classList.add('cart-item');
+            cartItem.innerHTML = `
+                <img src="${item.imageUrl}" alt="${item.name}">
+                <p>${item.name} - $${item.price}</p>
+                <div class="quantity">
+                    <button onclick="updateQuantity(${index}, -1)">➖</button>
+                    <span>${item.quantity}</span>
+                    <button onclick="updateQuantity(${index}, 1)">➕</button>
+                </div>
+                <button class="remove-btn" onclick="removeItem(${index})">❌</button>
+            `;
+            cartContainer.appendChild(cartItem);
+        });
+
+        totalPriceElement.textContent = total.toFixed(2);
+        localStorage.setItem('cart', JSON.stringify(cart));
+    }
+
+    function updateQuantity(index, change) {
+        if (cart[index].quantity + change > 0) {
+            cart[index].quantity += change;
+        } else {
+            cart.splice(index, 1);
+        }
+        updateCart();
+    }
+
+    function removeItem(index) {
+        cart.splice(index, 1);
+        updateCart();
+    }
+
+    function checkout() {
+        alert("Proceeding to Payment...");
+        localStorage.removeItem('cart');
+        window.location.href = "payment.html"; 
+    }
+
+    if (cart.length > 0) {
+        updateCart();
+    } else {
+        document.getElementById('cartItems').innerHTML = "<p>Your cart is empty.</p>";
+    }
+</script>
+
+</body>
+</html>
